@@ -3,13 +3,14 @@
 #include <bits/stdc++.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+
 #include <system_error>
 using namespace std;
 
 // Forward declaration for Ingredient struct
 struct Ingredient {
     // Add your ingredient fields here
-    int magnium_values[5]; // example field
+    int magnium_values[5];  // example field
 };
 
 /* We store ingredient magniums in ingredient_offsets. The first ingredient takes up
@@ -48,13 +49,24 @@ __global__ void calc_dp_first(int* dp, int n_states) {
 }
 
 __global__ void get_recipe(int* dp, int n_ingredients, int n_states, int* result, int* result_n) {
-    // Add implementation here
+    int idx = n_ingredients * n_states - 1;
+    for (int i = n_ingredients - 1; i > 0; i--) {
+        int ing_offset = ingredient_offsets[i];
+        if (ing_offset <= idx % n_states) {
+            if (dp[idx - ing_offset] == dp[idx] - 1) {
+                result[*result_n++] = i;
+            }
+        }
+    }
+    if (idx == ingredient_offsets[0]) {
+        result[*result_n++] = 0;
+    }
 }
 
 void cuda_calculate_recipe(
-    vector<Ingredient> ingredients, // a vector of ingredients
-    int ingredient_limit,           // the maximum number of ingredients allowed
-    array<int, 5> maximum_magniums  // maximum maginums the dp will try to get
+    vector<Ingredient> ingredients,  // a vector of ingredients
+    int ingredient_limit,            // the maximum number of ingredients allowed
+    array<int, 5> maximum_magniums   // maximum maginums the dp will try to get
 ) {
     int max_states = 1;
     for (int i : maximum_magniums) {
@@ -79,10 +91,14 @@ void cuda_calculate_recipe(
     calc_dp_first<<<dim3((max_states + 1023) / 1024, 1, 1), dim3(1024, 1, 1)>>>(dp, max_states);
 
     for (int i = 1; i < num_ingredients; i++) {
-        calc_dp<<<dim3((max_states + 1023) / 1024, 1, 1), dim3(1024, 1, 1)>>>(dp, i, ingredient_limit, max_states);
+        calc_dp<<<dim3((max_states + 1023) / 1024, 1, 1), dim3(1024, 1, 1)>>>(
+            dp, i, ingredient_limit, max_states);
     }
 
-    get_recipe<<<dim3(1, 1, 1), dim3(1, 1, 1)>>>(dp, num_ingredients, max_states);
+    int result[12];
+    int* result_n;
+    *result_n = 0;
+    get_recipe<<<dim3(1, 1, 1), dim3(1, 1, 1)>>>(dp, num_ingredients, max_states, result, result_n);
 
     cudaFree(dp);
 }
