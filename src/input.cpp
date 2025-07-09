@@ -1,6 +1,12 @@
 #include "./input.h"
 #include "./Ingredient.h"
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <vector>
+#include <stdlib.h>
+#include <fstream>
+#include <error.h>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 

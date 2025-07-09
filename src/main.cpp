@@ -1,3 +1,6 @@
+#include "Ingredient.h"
+
+
 array<int, 5> calc_max_mags(int caldron_magnum_limit, array<int, 5> recipe_ratios) {
     int sum = std::accumulate(recipe_ratios.begin(), recipe_ratios.end(), 0);
     array<int, 5> mx_magnums;
