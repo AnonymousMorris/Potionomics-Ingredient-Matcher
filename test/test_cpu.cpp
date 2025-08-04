@@ -108,12 +108,14 @@ vector<vector<int>> get_recipe(int num_elem, vector<vector<int>>dp, vector<vecto
 }
 
 int main() {
+    bool test_passed = true;
+
     // test parameters
     int num_elements = 2;
     int ingredient_limit = 5;
     vector<vector<int>> ingredients = {
         {0, 1},
-        {2, 0},
+        {1, 0},
     };
     vector<int> target = {2, 2};
 
@@ -129,8 +131,8 @@ int main() {
 
     if (equal(result.begin(), result.end(), exp.begin(), exp.end())) {
         cout << "The DP is correct" << endl;
-    }
-    else {
+    } else {
+        test_passed = false;
         cout << "The DP is incorrect" << endl;
 
         cout << "Expected: \n";
@@ -150,17 +152,31 @@ int main() {
         }
     }
 
-
     vector<vector<int>> recipe = get_recipe(num_elements, result, ingredients, target, ingredient_limit);
-    
-    
-    printf("recipe: \n");
-    for (auto i : recipe) {
-        for (auto j : i) {
-            printf("%d ", j);
+    vector<int> total(ingredients[0].size(), 0);    
+    for (auto mags : recipe) {
+        for (int idx = 0; idx < mags.size(); idx++) {
+            total[idx] += mags[idx];
         }
-        printf("\n");
+    }
+    if (total == target) {
+        printf("The Recipe is correct\n");
+    } else {
+        test_passed = false;
+        printf("Recipe is wrong, ingredients: ");
+        for (auto mags : recipe) {
+            for (int amt : mags) {
+                printf("%d ", amt);
+            }
+            printf("\n");
+        }
     }
 
-    return 0;
+    if (test_passed) {
+        printf("PASSED\n");
+    } else {
+        printf("FAILED\n");
+    }
+
+    return test_passed ? 0 : 1;
 }
